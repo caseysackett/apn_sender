@@ -4,11 +4,11 @@
 
 module APN
   # Enqueues a notification to be sent in the background via the persistent TCP socket, assuming apn_sender is running (or will be soon)
-  def self.notify(token, queue_name, opts = {})    
+  def self.notify(token, queue_name, opts = {})
     token = token.to_s.gsub(/\W/, '')
     APN::QueueManager.enqueue("apn_"+queue_name, APN::NotificationJob, token, opts)
-  end  
-  
+  end
+
   # Extends Resque, allowing us to add all the callbacks to Resque we desire without affecting the expected
   # functionality in the parent app, if we're included in e.g. a Rails application.
   class QueueManager
@@ -25,17 +25,13 @@ module APN
     def self.to_s
       "APN::QueueManager (Resque Client) connected to #{redis.server}"
     end
-    
+
     # We define our own enqueue method so we can specify a dynamic queue
     def self.enqueue(queue, klass, *args)
       Resque::Job.create(queue, klass, *args)
-
-      Resque::Plugin.after_enqueue_hooks(klass).each do |hook|
-        klass.send(hook, *args)
-      end
     end
   end
-  
+
 end
 
 # Ensures we close any open sockets when the worker exits
@@ -49,14 +45,14 @@ end
 # APN::QueueManager.after_fork do |job|
 #   # How many jobs should we process in each fork?
 #   jobs_per_fork = 10
-# 
+#
 #   # Set hook to nil to prevent running this hook over
 #   # and over while processing more jobs in this fork.
 #   Resque.after_fork = nil
-# 
+#
 #   # Make sure we process jobs in the right order.
 #   job.worker.process(job)
-# 
+#
 #   # One less than specified because the child will run a
 #   # final job after exiting this hook.
 #   (jobs_per_fork.to_i - 1).times do
