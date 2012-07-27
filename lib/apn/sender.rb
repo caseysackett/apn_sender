@@ -21,8 +21,10 @@ module APN
       if attempt > TIMES_TO_RETRY_SOCKET_ERROR
         log_and_die("Error with connection to #{apn_host} (retried #{TIMES_TO_RETRY_SOCKET_ERROR} times): #{error}")
       end
-      
+
+      log(:info, "Sending raw notification string to apple: #{notification.to_s}") if @opts[:verbose]
       self.socket.write( notification.to_s )
+      log(:info, "Finished sending notification string to apple") if @opts[:verbose]
     rescue SocketError => error
       log(:error, "Error with connection to #{apn_host} (attempt #{attempt}): #{error}")
       
