@@ -12,10 +12,14 @@ namespace :apn do
 
     begin
       logger = Logger.new(File.join(Rails.root, 'log', 'apn_sender.log'))
-      worker = APN::Sender.new(:cert_path => ENV['CERT_PATH'], :environment => ENV['ENVIRONMENT'], :app => ENV['APP'])
+      worker = APN::Sender.new(:cert_path => ENV['CERT_PATH'],
+                               :environment => ENV['ENVIRONMENT'],
+                               :app => ENV['APP'],
+                               :logger => logger,
+                               :verbose => true)
       worker.logger = logger
-      worker.verbose = ENV['LOGGING'] || ENV['VERBOSE']
-      worker.very_verbose = ENV['VVERBOSE']
+      worker.verbose = true
+      worker.very_verbose = true
     rescue Exception => e
       raise e
       # abort "set QUEUE env var, e.g. $ QUEUE=critical,high rake resque:work"

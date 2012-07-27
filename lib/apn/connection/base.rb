@@ -11,8 +11,8 @@ module APN
       
       def initialize(opts = {})
         @opts = opts             
-        
-        setup_logger
+
+        setup_logger(opts)
         log(:info, "APN::Sender initializing. Establishing connections first...") if @opts[:verbose]
         setup_paths
 
@@ -28,8 +28,10 @@ module APN
       protected
       
       # Default to Rails or Merg logger, if available
-      def setup_logger
-        @logger = if defined?(Merb::Logger)
+      def setup_logger(opts = nil)
+        @logger = if opts && opts[:logger]
+          opts[:logger]
+        elsif defined?(Merb::Logger)
           Merb.logger
         elsif defined?(RAILS_DEFAULT_LOGGER)
           RAILS_DEFAULT_LOGGER
@@ -91,6 +93,7 @@ module APN
         ctx.cert = OpenSSL::X509::Certificate.new(@apn_cert)
         ctx.key = OpenSSL::PKey::RSA.new(@apn_cert)
 
+        log(:info, "Opening socket connection to host #{apn_host} on port #{apn_port}")
         @socket_tcp = TCPSocket.new(apn_host, apn_port)
         @socket = OpenSSL::SSL::SSLSocket.new(@socket_tcp, ctx)
         @socket.sync = true
