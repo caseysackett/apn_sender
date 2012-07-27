@@ -11,7 +11,9 @@ namespace :apn do
     worker = nil
 
     begin
+      logger = Logger.new(File.join(Rails.root, 'log', 'apn_sender.log'))
       worker = APN::Sender.new(:cert_path => ENV['CERT_PATH'], :environment => ENV['ENVIRONMENT'], :app => ENV['APP'])
+      worker.logger = logger
       worker.verbose = ENV['LOGGING'] || ENV['VERBOSE']
       worker.very_verbose = ENV['VVERBOSE']
     rescue Exception => e
