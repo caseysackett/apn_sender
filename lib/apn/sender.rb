@@ -22,6 +22,9 @@ module APN
         log_and_die("Error with connection to #{apn_host} (retried #{TIMES_TO_RETRY_SOCKET_ERROR} times): #{error}")
       end
 
+      log(:info, "Sending notification with token: #{notification.token}") if @opts[:verbose]
+      log(:info, "Sending notification with options: #{notification.options}") if @opts[:verbose]
+      log(:info, "Sending notification with packaged message: #{notification.packaged_message}") if @opts[:verbose]
       log(:info, "Sending raw notification string to apple: #{notification.to_s}") if @opts[:verbose]
       self.socket.write( notification.to_s )
       log(:info, "Finished sending notification string to apple") if @opts[:verbose]
