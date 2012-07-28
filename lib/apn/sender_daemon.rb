@@ -44,6 +44,9 @@ module APN
         opts.on('-a', '--app=NAME', 'Specifies the application for this apn_sender') do |a|
           @options[:app] = a
         end
+        opts.on('-f', '--format-enhanced', 'Use enhanced binary protocol') do |f|
+          @options[:use_enhanced_format] = true
+        end
       end
       
       # If no arguments, give help screen

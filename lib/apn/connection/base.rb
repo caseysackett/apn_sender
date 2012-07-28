@@ -95,7 +95,9 @@ module APN
 
         log(:info, "Opening socket connection to host #{apn_host} on port #{apn_port}")
         @socket_tcp = TCPSocket.new(apn_host, apn_port)
+        @socket_tcp.setsockopt Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, true
         @socket = OpenSSL::SSL::SSLSocket.new(@socket_tcp, ctx)
+        @socket.sync_close = true
         @socket.sync = true
         @socket.connect
       rescue SocketError => error

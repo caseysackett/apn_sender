@@ -48,6 +48,12 @@ module APN
       [0, 0, 32, pt, 0, pm.size, pm].pack("ccca*cca*") 
     end
 
+    def enhanced_packaged_notification
+      pt = packaged_token
+      pm = packaged_message
+      [1, SecureRandom.random_bytes(4), 1, 0, 32, pt, 0, pm.bytesize, pm].pack("cA4Ncca*cca*")
+    end
+
     # Device token, compressed and hex-ified
     def packaged_token
       [@token.gsub(/[\s|<|>]/,'')].pack('H*')

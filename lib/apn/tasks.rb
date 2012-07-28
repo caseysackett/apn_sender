@@ -16,6 +16,7 @@ namespace :apn do
                                :environment => ENV['ENVIRONMENT'],
                                :app => ENV['APP'],
                                :logger => logger,
+                               :use_enhanced_format => ENV['USE_ENHANCED_FORMAT'],
                                :verbose => true)
       worker.logger = logger
       worker.verbose = true

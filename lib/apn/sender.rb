@@ -15,7 +15,8 @@ module APN
   class Sender < ::Resque::Worker
     include APN::Connection::Base
     TIMES_TO_RETRY_SOCKET_ERROR = 2
-                                
+    IO_SELECT_WAIT = 2
+
     # Send a raw string over the socket to Apple's servers (presumably already formatted by APN::Notification)
     def send_to_apple( notification, attempt = 0 )
       if attempt > TIMES_TO_RETRY_SOCKET_ERROR
@@ -25,8 +26,29 @@ module APN
       log(:info, "Sending notification with token: #{notification.token}") if @opts[:verbose]
       log(:info, "Sending notification with options: #{notification.options}") if @opts[:verbose]
       log(:info, "Sending notification with packaged message: #{notification.packaged_message}") if @opts[:verbose]
-      self.socket.write( notification.to_s )
+
+      if @opts[:use_enhanced_format]
+        self.socket.write( notification.enhanced_packaged_notification )
+
+        read, write, error = IO.select([self.socket], nil, [self.socket], IO_SELECT_WAIT)
+        if !error.nil? && !error.first.nil?
+          log(:error, "Error with connection to #{apn_host} (attempt #{attempt})")
+          teardown_connection
+          setup_connection
+          send_to_apple(notification, attempt + 1)
+        end
+
+        if !read.nil? && !read.first.nil?
+          error_response = self.socket.read_nonblock(6)
+          log(:error, "Error returned: #{error_response}")
+          teardown_connection
+          setup_connection
+        end
+      else
+        self.socket.write( notification.to_s )
+      end
       log(:info, "Finished sending notification string to apple") if @opts[:verbose]
+
     rescue SocketError => error
       log(:error, "Error with connection to #{apn_host} (attempt #{attempt}): #{error}")
       
