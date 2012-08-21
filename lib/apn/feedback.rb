@@ -61,7 +61,8 @@ module APN
       # Unpacking code borrowed from http://github.com/jpoz/APNS/blob/master/lib/apns/core.rb
       while line = socket.gets   # Read lines from the socket
         line.strip!
-        f = line.unpack('N1n1H140')
+        f = line.unpack('N1n1H*')
+        #f = line.unpack('N1n1H140')
         feedback << APN::FeedbackItem.new(Time.at(f[0]), f[2])
       end
 
