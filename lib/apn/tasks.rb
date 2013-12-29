@@ -8,23 +8,16 @@ namespace :apn do
   task :sender => :setup do
     require 'apn'
 
-    worker = nil
-
-    begin
-      logger = Logger.new(File.join(Rails.root, 'log', 'apn_sender.log'))
-      worker = APN::Sender.new(:cert_path => ENV['CERT_PATH'],
-                               :environment => ENV['ENVIRONMENT'],
-                               :app => ENV['APP'],
-                               :logger => logger,
-                               :use_enhanced_format => ENV['USE_ENHANCED_FORMAT'],
-                               :verbose => true)
-      worker.logger = logger
-      worker.verbose = true
-      worker.very_verbose = true
-    rescue Exception => e
-      raise e
-      # abort "set QUEUE env var, e.g. $ QUEUE=critical,high rake resque:work"
+    unless defined?(Resque)
+      puts "This rake task is only for resque workers"
+      return
     end
+
+    APN.password = ENV['CERT_PASS']
+    APN.full_certificate_path =  ENV['FULL_CERT_PATH']
+    APN.logger = Rails.logger
+
+    worker = ::Resque::Worker.new(APN::Jobs::QUEUE_NAME)
 
     puts "*** Starting worker to send apple notifications in the background from #{worker}"
 
