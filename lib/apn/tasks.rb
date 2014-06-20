@@ -3,8 +3,8 @@ def start_worker
 
   worker = nil
 
+  logger = Logger.new(File.join(Rails.root, 'log', 'apn_sender.log'))
   begin
-    logger = Logger.new(File.join(Rails.root, 'log', 'apn_sender.log'))
     worker = APN::Sender.new(:cert_path => ENV['CERT_PATH'],
                              :environment => ENV['ENVIRONMENT'],
                              :app => ENV['APP'],
@@ -15,6 +15,7 @@ def start_worker
     worker.verbose = true
     worker.very_verbose = true
   rescue Exception => e
+    logger.error "Error raised while saving user #{e.inspect} #{e.message} #{e.backtrace}"
     raise e
     # abort "set QUEUE env var, e.g. $ QUEUE=critical,high rake resque:work"
   end
@@ -38,8 +39,9 @@ namespace :apn do
   desc "Start multiple APN workers. Should only be used in dev mode."
   task :senders do
     threads = []
-
+    logger = Logger.new(File.join(Rails.root, 'log', 'apn_sender.log'))
     ENV['APPS'].split(' ').each do |app|
+      logger.error("Starting thread for worker #{app}")
       threads << Thread.new do
         ENV['APP'] = app
         start_worker
