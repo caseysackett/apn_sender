@@ -5,7 +5,7 @@
 module APN
   # Enqueues a notification to be sent in the background via the persistent TCP socket, assuming apn_sender is running (or will be soon)
   def self.notify(token, queue_name, opts = {})
-    token = token.to_s.gsub(/\W/, '')
+    token = queue_name == "gcm" ? token : token.to_s.gsub(/\W/, '')
     APN::QueueManager.enqueue("apn_"+queue_name, APN::NotificationJob, token, opts)
   end
 
